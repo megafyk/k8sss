@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      volumes:
+        - name: mymariavol
+          persistentVolumeClaim:
+            claimName: pvc1
+      containers:
+        - name: mariadb
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          image: mariadb:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: MYSQL_ROOT_PASSWORD
+              value: "mymaria"
+            - name: MYSQL_DATABASE
+              value: "mymaria" #optional
+            - name: MYSQL_USER
+              value: "mymaria" #optional
+            - name: MYSQL_PASSWORD
+              value: "mymaria" #optional
+          ports:
+            - name: tcp-01
+              containerPort: 3306
+          volumeMounts:
+            - name: mymariavol
+              mountPath: "/var/lib/mysql"
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+spec:
+  ports:
+    - name: tcp-01
+      port: 3306
+      protocol: TCP
+      targetPort: 3306
+      nodePort: 31306
+  selector:
+    app: mariadb
+  type: NodePort
