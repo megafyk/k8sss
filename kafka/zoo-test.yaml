@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: zoo1
+  name: zoo1
+spec:
+  ports:
+  - name: "2181"
+    port: 2181
+    targetPort: 2181
+  selector:
+    service: zoo1-instance
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    service: zoo1-instance
+  name: zoo1-instance
+spec:
+  selector:
+    matchLabels:
+      service: zoo1-instance
+  serviceName: "zoo1"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: zoo1-instance
+    spec:
+      containers:
+      - image: wurstmeister/zookeeper
+        name: zoo1-instance
+        ports:
+        - containerPort: 2181
