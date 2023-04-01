@@ -1,22 +1,34 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafka-lb
+  labels:
+    service: kafka
+  name: kafka
 spec:
-  selector:
-    app: kafka-app
+  type: NodePort
   ports:
   - name: kafka
     port: 9092
+    protocol: TCP
     targetPort: 9092
-  type: LoadBalancer
+  - name: "9093"
+    port: 9093
+    protocol: TCP
+    targetPort: 9093
+  - name: "32092"
+    port: 32092
+    protocol: TCP
+    targetPort: 32092
+    nodePort: 32092
+  selector:
+    service: kafka
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: kafka-svc
   labels:
-    app: kafka-app
+    app: kafka
 spec:
   ports:
     - name: kafka
@@ -24,24 +36,24 @@ spec:
       protocol: TCP
       targetPort: 9092
   selector:
-    app: kafka-app
+    app: kafka
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: kafka
   labels:
-    app: kafka-app
+    app: kafka
 spec:
   serviceName: kafka-svc
   replicas: 3
   selector:
     matchLabels:
-      app: kafka-app
+      app: kafka
   template:
     metadata:
       labels:
-        app: kafka-app
+        app: kafka
     spec:
       containers:      
         - name: kafka-container
@@ -71,6 +83,11 @@ spec:
               value: '3'
             - name: DEFAULT_MIN_INSYNC_REPLICAS
               value: '2'
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: 'INTERNAL://$(MY_POD_NAME).kafka.default.svc.cluster.local:9093,CLIENT://$(MY_POD_NAME).kafka.default.svc.cluster.local:9092,EXTERNAL://$(MY_HOST_IP):32092'
+            - name: KAFKA_LISTENERS
+              value: INTERNAL://:9093,CLIENT://:9092,EXTERNAL://:32092
+
           volumeMounts:
             - name: data
               mountPath: /mnt/kafka
