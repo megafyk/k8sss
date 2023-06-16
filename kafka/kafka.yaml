@@ -77,7 +77,7 @@ spec:
             - name: DEFAULT_MIN_INSYNC_REPLICAS
               value: '2'
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: 'INTERNAL://$(POD_NAME).kafka-svc.default.svc.cluster.local:9093,CLIENT://$(POD_NAME).kafka-svc.default.svc.cluster.local:9092,EXTERNAL://$(NODE_IP):32092'
+              value: 'INTERNAL://$(POD_NAME).default.svc.cluster.local:9093,CLIENT://$(POD_NAME).default.svc.cluster.local:9092,EXTERNAL://$(NODE_IP):32092'
             - name: KAFKA_LISTENERS
               value: INTERNAL://:9093,CLIENT://:9092,EXTERNAL://:32092
 
