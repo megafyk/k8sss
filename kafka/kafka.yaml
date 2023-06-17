@@ -1,67 +1,45 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
+  name: kafka-svc
   labels:
-    service: kafka
-  name: kafka
+    app.kubernetes.io/name: kafka
 spec:
-  type: NodePort
+  clusterIP: None
   ports:
-  - name: "9092"
-    port: 9092
-    protocol: TCP
-    targetPort: 9092
-  - name: "9093"
-    port: 9093
-    protocol: TCP
-    targetPort: 9093
-  - name: "32092"
-    port: 32092
-    protocol: TCP
-    targetPort: 32092
-    nodePort: 32092
+    - name: '9092'
+      port: 9092
+      protocol: TCP
+      targetPort: 9092
   selector:
-    app: kafka
+    app.kubernetes.io/name: kafka
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: kafka
   labels:
-    app: kafka
+    app.kubernetes.io/name: kafka
 spec:
   serviceName: kafka-svc
   replicas: 3
   selector:
     matchLabels:
-      app: kafka
+      app.kubernetes.io/name: kafka
   template:
     metadata:
       labels:
-        app: kafka
+        app.kubernetes.io/name: kafka
     spec:
-      containers:      
+      containers:
         - name: kafka-container
-          # resources:
-          #     requests:
-          #       memory: "128Mi"
-          #       cpu: "250m"
-          #     limits:
-          #       memory: "256Mi"
-          #       cpu: "500m"
           image: doughgle/kafka-kraft
+          imagePullPolicy: Always
           ports:
             - containerPort: 9092
             - containerPort: 9093
           env:
-            - name: NODE_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
             - name: REPLICAS
               value: '3'
             - name: SERVICE
@@ -76,14 +54,16 @@ spec:
               value: '3'
             - name: DEFAULT_MIN_INSYNC_REPLICAS
               value: '2'
-            - name: KAFKA_ADVERTISED_LISTENERS
-              value: 'INTERNAL://$(POD_NAME).default.svc.cluster.local:9093,CLIENT://$(POD_NAME).default.svc.cluster.local:9092,EXTERNAL://$(NODE_IP):32092'
-            - name: KAFKA_LISTENERS
-              value: INTERNAL://:9093,CLIENT://:9092,EXTERNAL://:32092
-
           volumeMounts:
             - name: data
               mountPath: /mnt/kafka
+      # topologySpreadConstraints:
+      # - maxSkew: 1
+      #   topologyKey: topology.kubernetes.io/zone
+      #   whenUnsatisfiable: DoNotSchedule
+      #   labelSelector:
+      #     matchLabels:
+      #       app.kubernetes.io/name: kafka
   volumeClaimTemplates:
     - metadata:
         name: data

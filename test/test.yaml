@@ -4,6 +4,7 @@ metadata:
   name: dnsutils
   namespace: default
 spec:
+  dnsPolicy: ClusterFirst
   containers:
   - name: dnsutils
     image: registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3
