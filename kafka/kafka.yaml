@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
         - name: kafka-container
-          image: doughgle/kafka-kraft
+          image: megafyk/kraft
           imagePullPolicy: Always
           ports:
             - containerPort: 9092
