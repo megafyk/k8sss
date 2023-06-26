@@ -1,0 +1,70 @@
+- name: Install Redis
+  hosts: 
+    - master
+    - slave
+  tasks:
+    - name: Check if port is running {{ port }}
+      shell: "lsof -i :{{ port }} | wc -l"
+      register: port_status
+
+    - name: Terminate process
+      shell: kill -9 `lsof -ti:{{ port }}`
+      when: port_status.stdout > "0"
+
+    - name: Make folder
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - "{{ base_path }}/{{ port }}/"
+
+    - name: Copy config file
+      copy:
+        src: "./redis.conf"
+        dest: "{{ base_path }}/{{ port }}/"
+
+    - name: Replace multiple lines 
+      lineinfile: 
+        path: "{{ base_path }}/{{ port }}/redis.conf"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+       - regexp: "dir ./"
+         line: "dir {{ base_path }}/{{ port }}/"
+       - regexp: "port 6379"
+         line: "port {{ port }}"
+       - regexp: "pidfile redis.pid" 
+         line: "pidfile {{ base_path }}/{{ port }}/redis.pid"
+       - regexp: "logfile redis.log"
+         line: "logfile {{ base_path }}/{{ port }}/redis.log"
+       - regexp: "cluster-config-file nodes-6379.conf"
+         line: "cluster-config-file {{ base_path }}/{{ port }}/nodes-{{ port }}.conf"
+
+    - name: Download redis
+      get_url:
+        url: https://github.com/redis/redis/archive/{{ redis_version }}.tar.gz
+        dest: "{{ base_path }}/"
+
+    - name: File tar
+      unarchive: 
+        src: "{{ base_path }}/redis-{{ redis_version }}.tar.gz" 
+        dest: "{{ base_path }}"
+        remote_src: yes
+
+    - name: Build from src
+      shell: "cd {{ base_path }}/redis-{{ redis_version }} && make"
+
+    - name: Start redis node
+      shell: "{{ base_path }}/redis-{{ redis_version }}/src/redis-server {{ base_path }}/{{ port }}/redis.conf"
+
+- name: Start redis cluster
+  hosts: topo
+  tasks:
+    - name: Start redis cluster
+      expect:
+        command: "{{ base_path }}/redis-{{ redis_version }}/src/redis-cli --cluster create {{ topo_path }} --cluster-replicas {{ topo_num }}"
+        responses:
+          "Can I set the above configuration": "yes"
+
+
+
