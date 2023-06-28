@@ -45,7 +45,7 @@
     - name: Check if file exists
       stat:
         path: "{{ base_path }}/redis-{{ redis_version }}.tar.gz"
-      register: downloaded
+      register: downloaded.stats.exists
 
     - name: Download redis
       get_url:
