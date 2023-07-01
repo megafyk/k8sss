@@ -8,6 +8,7 @@
         path: "{{ item }}"
         state: directory
       loop:
+        - "{{ base_path }}/"
         - "{{ base_path }}/{{ port }}/"
 
     - name: Remove current metadata file
@@ -45,13 +46,13 @@
     - name: Check if file exists
       stat:
         path: "{{ base_path }}/redis-{{ redis_version }}.tar.gz"
-      register: downloaded.stats.exists
+      register: downloaded
 
     - name: Download redis
       get_url:
         url: https://github.com/redis/redis/archive/{{ redis_version }}.tar.gz
         dest: "{{ base_path }}/"
-      when: not downloaded
+      when: not downloaded.stat.exists
 
     - name: File tar
       unarchive: 
@@ -75,7 +76,7 @@
       shell: kill -9 `lsof -ti:{{ port }}`
       when: port_status.stdout > "0"
 
-    - name: start redis node
+    - name: Start redis node
       shell: "{{ base_path }}/redis-{{ redis_version }}/src/redis-server {{ base_path }}/{{ port }}/redis.conf"
 
 - name: Start redis cluster
