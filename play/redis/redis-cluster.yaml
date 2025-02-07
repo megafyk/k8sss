@@ -1,12 +1,15 @@
 - name: Init Redis
-  hosts: 
+  hosts:
     - master
     - slave
   tasks:
+    - name: Remove folder and files
+      file: path="{{ base_path }}/{{ port }}/" state=absent
+
     - name: Make folder
       file:
-        path: "{{ item }}"
         state: directory
+        path: "{{ item }}"
       loop:
         - "{{ base_path }}/"
         - "{{ base_path }}/{{ port }}/"
@@ -23,22 +26,22 @@
         src: "./redis.conf"
         dest: "{{ base_path }}/{{ port }}/"
 
-    - name: Replace multiple lines 
-      lineinfile: 
+    - name: Replace multiple lines
+      lineinfile:
         path: "{{ base_path }}/{{ port }}/redis.conf"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       loop:
-       - regexp: "dir ./"
-         line: "dir {{ base_path }}/{{ port }}/"
-       - regexp: "port 6379"
-         line: "port {{ port }}"
-       - regexp: "pidfile redis.pid" 
-         line: "pidfile {{ base_path }}/{{ port }}/redis.pid"
-       - regexp: "logfile redis.log"
-         line: "logfile {{ base_path }}/{{ port }}/redis.log"
-       - regexp: "cluster-config-file nodes-6379.conf"
-         line: "cluster-config-file {{ base_path }}/{{ port }}/nodes-{{ port }}.conf"
+        - regexp: "dir ./"
+          line: "dir {{ base_path }}/{{ port }}/"
+        - regexp: "port 6379"
+          line: "port {{ port }}"
+        - regexp: "pidfile redis.pid"
+          line: "pidfile {{ base_path }}/{{ port }}/redis.pid"
+        - regexp: "logfile redis.log"
+          line: "logfile {{ base_path }}/{{ port }}/redis.log"
+        - regexp: "cluster-config-file nodes-6379.conf"
+          line: "cluster-config-file {{ base_path }}/{{ port }}/nodes-{{ port }}.conf"
 
 - name: Build Redis
   hosts: build
@@ -55,7 +58,7 @@
       when: not downloaded.stat.exists
 
     - name: File tar
-      unarchive: 
+      unarchive:
         src: "{{ base_path }}/redis-{{ redis_version }}.tar.gz"
         dest: "{{ base_path }}"
         remote_src: yes
@@ -63,7 +66,7 @@
     - name: Build from src
       shell: "cd {{ base_path }}/redis-{{ redis_version }} && make"
 
-- name: Start redis node 
+- name: Start redis node
   hosts:
     - master
     - slave
@@ -82,11 +85,11 @@
 - name: Start redis cluster
   hosts: topo
   tasks:
-    - name: Start redis cluster
-      expect:
-        command: "{{ base_path }}/redis-{{ redis_version }}/src/redis-cli --cluster create {{ topo_path }} --cluster-replicas {{ topo_num }}"
-        responses:
-          "Can I set the above configuration": "yes"
+    - name: Set REDIS_PASSWORD
+      set_fact:
+        REDIS_PASSWORD: "foobared"
 
-
-
+    - name: Start redis cluster with responses
+      shell: |
+        export REDIS_PASSWORD="{{ REDIS_PASSWORD }}" && \
+        echo "yes" | {{ base_path }}/redis-{{ redis_version }}/src/redis-cli --cluster create {{ topo_path }} --cluster-replicas {{ topo_num }} -a $REDIS_PASSWORD

@@ -1,5 +1,5 @@
 - name: Init Kafka
-  hosts: 
+  hosts:
     - broker
   tasks:
     - name: Make folder
@@ -15,22 +15,22 @@
         src: "./config/kraft/server.properties"
         dest: "{{ base_path }}/{{ listener_port }}/"
 
-    - name: Replace multiple lines 
-      lineinfile: 
+    - name: Replace multiple lines
+      lineinfile:
         path: "{{ base_path }}/{{ listener_port }}/server.properties"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       loop:
-       - regexp: "node.id=1"
-         line: "node.id={{ listener_port }}"
-       - regexp: "controller.quorum.voters=1@localhost:9093"
-         line: "controller.quorum.voters={{ qourum_voters }}"
-       - regexp: "listeners=PLAINTEXT://:9092,CONTROLLER://:9093" 
-         line: "listeners=PLAINTEXT://:{{ listener_port }},CONTROLLER://:{{ qourum_port }}"
-       - regexp: "advertised.listeners=PLAINTEXT://localhost:9092"
-         line: "advertised.listeners=PLAINTEXT://{{ ansible_host }}:{{ listener_port }}"
-       - regexp: "log.dirs=/tmp/kraft-combined-logs"
-         line: "log.dirs={{ base_path }}/{{ listener_port }}/kraft-combined-logs"
+        - regexp: "node.id=1"
+          line: "node.id={{ listener_port }}"
+        - regexp: "controller.quorum.voters=1@localhost:9093"
+          line: "controller.quorum.voters={{ qourum_voters }}"
+        - regexp: "listeners=PLAINTEXT://:9092,CONTROLLER://:9093"
+          line: "listeners=PLAINTEXT://:{{ listener_port }},CONTROLLER://:{{ qourum_port }}"
+        - regexp: "advertised.listeners=PLAINTEXT://localhost:9092"
+          line: "advertised.listeners=PLAINTEXT://{{ ansible_host }}:{{ listener_port }}"
+        - regexp: "log.dirs=/tmp/kraft-combined-logs"
+          line: "log.dirs={{ base_path }}/{{ listener_port }}/kraft-combined-logs"
 
 - name: Build Kafka
   hosts: base
@@ -47,12 +47,12 @@
       when: not downloaded.stat.exists
 
     - name: File tar
-      unarchive: 
+      unarchive:
         src: "{{ base_path }}/kafka_{{ scala_version }}.tgz"
         dest: "{{ base_path }}"
         remote_src: yes
-    
-- name: Start kafka node 
+
+- name: Start kafka node
   hosts:
     - broker
   tasks:
@@ -63,7 +63,7 @@
     - name: Terminate process
       shell: kill -9 `lsof -ti:{{ listener_port }}`
       when: port_status.stdout > "0"
-    
+
     - name: Stop qourum_port
       shell: "lsof -i :{{ qourum_port }} | wc -l"
       register: port_status
@@ -82,5 +82,3 @@
 
     - name: Start kafka broker
       shell: "{{ base_path }}/kafka_{{ scala_version }}/bin/kafka-server-start.sh -daemon {{ base_path }}/{{ listener_port }}/server.properties"
-
-

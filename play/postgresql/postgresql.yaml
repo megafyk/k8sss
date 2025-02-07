@@ -1,0 +1,58 @@
+---
+- name: Install PostgreSQL and pgvector
+  hosts: all
+  become: true
+  vars:
+    postgres_version: "15"
+    pgvector_version: "0.5.1" # Change as needed
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - postgresql-{{ postgres_version }}
+          - postgresql-server-dev-{{ postgres_version }}
+          - build-essential
+          - git
+        state: present
+        update_cache: yes
+
+    - name: Install pgvector from source
+      block:
+        - name: Clone pgvector repository
+          git:
+            repo: "https://github.com/pgvector/pgvector.git"
+            dest: "/tmp/pgvector"
+            version: "v{{ pgvector_version }}"
+
+        - name: Build and install pgvector
+          shell: |
+            cd /tmp/pgvector
+            make
+            make install
+          args:
+            creates: "/usr/lib/postgresql/{{ postgres_version }}/lib/pgvector.so"
+
+    - name: Enable pgvector extension in PostgreSQL
+      become_user: postgres
+      shell: |
+        psql -c "CREATE EXTENSION IF NOT EXISTS vector;"
+      environment:
+        PATH: "/usr/lib/postgresql/{{ postgres_version }}/bin:{{ ansible_env.PATH }}"
+      changed_when: false
+
+    - name: Restart PostgreSQL
+      service:
+        name: postgresql
+        state: restarted
+
+    - name: Verify pgvector installation
+      become_user: postgres
+      shell: |
+        psql -c "SELECT * FROM pg_extension WHERE extname = 'vector';"
+      register: pgvector_check
+      changed_when: false
+
+    - name: Show pgvector installation result
+      debug:
+        msg: "{{ pgvector_check.stdout_lines }}"

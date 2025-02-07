@@ -2,13 +2,15 @@
 kafka_version=3.5.0
 scala_version=2.13-3.5.0
 base_path=/home/mycen/kafka
-qourum_voters=9092@192.168.122.31:19092,9093@192.168.122.31:19093,9094@192.168.122.31:19094
+qourum_voters=9092@192.168.122.20:19092,9093@192.168.122.21:19093,9094@192.168.122.22:19094
 
 [base]
-broker0 ansible_host=192.168.122.31 ansible_host_name=host0 ansible_user=mycen listener_port=9092 qourum_port=19092
+broker0 ansible_host=192.168.122.20 ansible_host_name=host0 ansible_user=mycen listener_port=9092 qourum_port=19092
+broker1 ansible_host=192.168.122.21 ansible_host_name=host1 ansible_user=mycen listener_port=9093 qourum_port=19093
+broker2 ansible_host=192.168.122.22 ansible_host_name=host2 ansible_user=mycen listener_port=9094 qourum_port=19094
 
 [broker]
-broker0 ansible_host=192.168.122.31 ansible_host_name=host0 ansible_user=mycen listener_port=9092 qourum_port=19092
-broker1 ansible_host=192.168.122.31 ansible_host_name=host1 ansible_user=mycen listener_port=9093 qourum_port=19093
-broker2 ansible_host=192.168.122.31 ansible_host_name=host2 ansible_user=mycen listener_port=9094 qourum_port=19094
+broker0 ansible_host=192.168.122.20 ansible_host_name=host0 ansible_user=mycen listener_port=9092 qourum_port=19092
+broker1 ansible_host=192.168.122.21 ansible_host_name=host1 ansible_user=mycen listener_port=9093 qourum_port=19093
+broker2 ansible_host=192.168.122.22 ansible_host_name=host2 ansible_user=mycen listener_port=9094 qourum_port=19094
 
