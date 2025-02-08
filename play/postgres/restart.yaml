@@ -1,0 +1,21 @@
+- name: Restart PostgreSQL installed in home directory
+  hosts: all
+  vars:
+    postgres_home: "{{base_dir}}/pgsql" # Change to your PostgreSQL installation path
+    pg_data: "{{ postgres_home }}/data"
+    pg_bin: "{{ postgres_home }}/bin"
+    pg_user: "{{ db_user }}"
+
+  tasks:
+    - name: Check if PostgreSQL is running
+      shell: "{{ pg_bin }}/pg_ctl status -D {{ pg_data }}"
+      register: postgres_status
+      become: no
+      become_user: "{{ db_user }}"
+      ignore_errors: yes # Avoid failure if PostgreSQL is not running
+
+    - name: Restart PostgreSQL if not running
+      shell: "{{ pg_bin }}/pg_ctl restart -D {{ pg_data }} -l {{ pg_data }}/postgresql.log"
+      become: no
+      become_user: "{{ pg_user }}"
+      when: "'server is running' not in postgres_status.stdout"

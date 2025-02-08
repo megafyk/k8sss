@@ -1,0 +1,9 @@
+[all]
+host0 ansible_host=192.168.122.20 ansible_host_name=host0 ansible_user=mycen port=22
+
+[all:vars]
+postgres_ver=16.6
+pgvector_ver=0.8.0
+base_dir=/home/mycen/postgres
+db_user=admin
+db_password=admin

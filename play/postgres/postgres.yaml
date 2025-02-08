@@ -1,0 +1,130 @@
+- name: Install PostgreSQL and pgvector from source into home directory
+  hosts: all
+  gather_facts: yes
+  vars:
+    # Versions and source URLs
+    postgres_version: "{{ postgres_ver }}"
+    pgvector_version: "{{ pgvector_ver }}"
+    postgres_source_url: "https://ftp.postgresql.org/pub/source/v{{ postgres_version }}/postgresql-{{ postgres_version }}.tar.gz"
+
+    # Directories (all inside the home folder)
+    home_dir: "{{ base_dir }}"
+    src_dir: "{{ home_dir }}/src"
+    install_prefix: "{{ home_dir }}/pgsql"
+    postgres_tarball: "{{ src_dir }}/postgresql-{{ postgres_version }}.tar.gz"
+    postgres_src_dir: "{{ src_dir }}/postgresql-{{ postgres_version }}"
+    pgvector_dir: "{{ src_dir }}/pgvector"
+
+  tasks:
+    - name: Ensure source directory exists
+      file:
+        path: "{{ src_dir }}"
+        state: directory
+
+    - name: Ensure installation prefix directory exists
+      file:
+        path: "{{ install_prefix }}"
+        state: directory
+
+    - name: Download PostgreSQL source tarball
+      get_url:
+        url: "{{ postgres_source_url }}"
+        dest: "{{ postgres_tarball }}"
+        mode: "0644"
+        force: no
+
+    - name: Extract PostgreSQL source tarball
+      unarchive:
+        src: "{{ postgres_tarball }}"
+        dest: "{{ src_dir }}"
+        remote_src: yes
+      args:
+        creates: "{{ postgres_src_dir }}/Makefile"
+
+    - name: Configure PostgreSQL build with custom prefix
+      command: "./configure --prefix={{ install_prefix }}"
+      args:
+        chdir: "{{ postgres_src_dir }}"
+        creates: "{{ postgres_src_dir }}/Makefile.config"
+
+    - name: Build PostgreSQL (this may take a while)
+      shell: "make -j{{ ansible_processor_vcpus | default(2) }}"
+      args:
+        chdir: "{{ postgres_src_dir }}"
+
+    - name: Install PostgreSQL locally
+      shell: "make install"
+      args:
+        chdir: "{{ postgres_src_dir }}"
+
+    - name: Create PostgreSQL data directory
+      file:
+        path: "{{ install_prefix }}/data"
+        state: directory
+
+    - name: Initialize PostgreSQL database cluster
+      shell: "{{ install_prefix }}/bin/initdb -D {{ install_prefix }}/data"
+      args:
+        creates: "{{ install_prefix }}/data/PG_VERSION"
+      environment:
+        PATH: "{{ install_prefix }}/bin:{{ ansible_env.PATH }}"
+
+    - name: Start PostgreSQL server in the background
+      shell: "{{ install_prefix }}/bin/pg_ctl -D {{ install_prefix }}/data -l {{ install_prefix }}/data/postgresql.log start"
+      args:
+        chdir: "{{ install_prefix }}"
+
+    - name: Create admin user with a password
+      shell: >
+        {{ install_prefix }}/bin/psql -c "CREATE USER {{ db_user }} WITH SUPERUSER PASSWORD '{{ db_password }}';" postgres
+      environment:
+        PATH: "{{ install_prefix }}/bin:{{ ansible_env.PATH }}"
+      ignore_errors: yes # Ignore errors if user already exists
+
+    - name: Ensure password authentication is enabled in pg_hba.conf
+      lineinfile:
+        path: "{{ install_prefix }}/data/pg_hba.conf"
+        line: "host all all 0.0.0.0/0 md5"
+        insertafter: EOF
+
+    - name: Ensure PostgreSQL listens on all IPs
+      lineinfile:
+        path: "{{ install_prefix }}/data/postgresql.conf"
+        regexp: "^listen_addresses"
+        line: "listen_addresses = '*'"
+
+    - name: Reload PostgreSQL to apply changes
+      shell: "{{ install_prefix }}/bin/pg_ctl reload -D {{ install_prefix }}/data"
+
+    - name: Clone the pgvector repository
+      git:
+        repo: "https://github.com/pgvector/pgvector.git"
+        dest: "{{ pgvector_dir }}"
+        version: "v{{ pgvector_version }}"
+        force: yes
+
+    - name: Build the pgvector extension
+      shell: "make"
+      args:
+        chdir: "{{ pgvector_dir }}"
+      environment:
+        PG_CONFIG: "{{ install_prefix }}/bin/pg_config"
+
+    - name: Install the pgvector extension
+      shell: "make install"
+      args:
+        chdir: "{{ pgvector_dir }}"
+      environment:
+        PG_CONFIG: "{{ install_prefix }}/bin/pg_config"
+
+    - name: Verify pgvector installation by creating the extension
+      shell: >
+        {{ install_prefix }}/bin/psql -c "CREATE EXTENSION IF NOT EXISTS vector;" postgres
+      environment:
+        PATH: "{{ install_prefix }}/bin:{{ ansible_env.PATH }}"
+      register: pgvector_verify
+      changed_when: false
+
+    - name: Show pgvector installation output
+      debug:
+        msg: "{{ pgvector_verify.stdout }}"
