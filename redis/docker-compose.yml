@@ -1,0 +1,115 @@
+services:
+  redis-1:
+    image: redis:latest
+    container_name: redis-1
+    hostname: redis-1
+    ports:
+      - "7001:7001"
+      - "17001:17001"
+    volumes:
+      - redis-1-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7001", "--cluster-announce-hostname", "redis-1", "--cluster-announce-port", "7001", "--cluster-announce-bus-port", "17001", "--cluster-preferred-endpoint-type", "hostname"]
+    networks:
+      - redis-net
+
+  redis-2:
+    image: redis:latest
+    container_name: redis-2
+    hostname: redis-2
+    ports:
+      - "7002:7002"
+      - "17002:17002"
+    volumes:
+      - redis-2-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7002", "--cluster-announce-hostname", "redis-2", "--cluster-announce-port", "7002", "--cluster-announce-bus-port", "17002", "--cluster-preferred-endpoint-type", "hostname"]
+    networks:
+      - redis-net
+
+  redis-3:
+    image: redis:latest
+    container_name: redis-3
+    hostname: redis-3
+    ports:
+      - "7003:7003"
+      - "17003:17003"
+    volumes:
+      - redis-3-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7003", "--cluster-announce-hostname", "redis-3", "--cluster-announce-port", "7003", "--cluster-announce-bus-port", "17003", "--cluster-preferred-endpoint-type", "hostname"]
+    networks:
+      - redis-net
+
+  redis-4:
+    image: redis:latest
+    container_name: redis-4
+    hostname: redis-4
+    ports:
+      - "7004:7004"
+      - "17004:17004"
+    volumes:
+      - redis-4-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7004", "--cluster-announce-hostname", "redis-4", "--cluster-announce-port", "7004", "--cluster-announce-bus-port", "17004", "--cluster-preferred-endpoint-type", "hostname"]
+    networks:
+      - redis-net
+
+  redis-5:
+    image: redis:latest
+    container_name: redis-5
+    hostname: redis-5
+    ports:
+      - "7005:7005"
+      - "17005:17005"
+    volumes:
+      - redis-5-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7005", "--cluster-announce-hostname", "redis-5", "--cluster-announce-port", "7005", "--cluster-announce-bus-port", "17005", "--cluster-preferred-endpoint-type", "hostname"]
+    networks:
+      - redis-net
+
+  redis-6:
+    image: redis:latest
+    container_name: redis-6
+    hostname: redis-6
+    ports:
+      - "7006:7006"
+      - "17006:17006"
+    volumes:
+      - redis-6-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7006", "--cluster-announce-hostname", "redis-6", "--cluster-announce-port", "7006", "--cluster-announce-bus-port", "17006", "--cluster-preferred-endpoint-type", "hostname"]
+    networks:
+      - redis-net
+
+  redis-cluster-init:
+    image: redis:latest
+    container_name: redis-cluster-init
+    depends_on:
+      - redis-1
+      - redis-2
+      - redis-3
+      - redis-4
+      - redis-5
+      - redis-6
+    command: >
+      sh -c "sleep 5 &&
+      echo yes | redis-cli -a foobared --cluster create
+      redis-1:7001 redis-2:7002 redis-3:7003
+      redis-4:7004 redis-5:7005 redis-6:7006
+      --cluster-replicas 1"
+    networks:
+      - redis-net
+
+volumes:
+  redis-1-data:
+  redis-2-data:
+  redis-3-data:
+  redis-4-data:
+  redis-5-data:
+  redis-6-data:
+
+networks:
+  redis-net:
+    driver: bridge
