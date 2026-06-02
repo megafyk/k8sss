@@ -11,4 +11,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/home/mycen/k8s/data/mymaria"
+    path: "/home/myadmin/tools/projects/k8sss/tmp/mymaria"

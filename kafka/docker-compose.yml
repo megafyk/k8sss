@@ -33,7 +33,7 @@ services:
 
       KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf"
     volumes:
-      - kafka-1-data:/var/lib/kafka/data
+      - ../tmp/kafka/kafka-1:/var/lib/kafka/data
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf:ro
     networks:
       - kafka-net
@@ -72,7 +72,7 @@ services:
 
       KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf"
     volumes:
-      - kafka-2-data:/var/lib/kafka/data
+      - ../tmp/kafka/kafka-2:/var/lib/kafka/data
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf:ro
     networks:
       - kafka-net
@@ -111,15 +111,10 @@ services:
 
       KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf"
     volumes:
-      - kafka-3-data:/var/lib/kafka/data
+      - ../tmp/kafka/kafka-3:/var/lib/kafka/data
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf:ro
     networks:
       - kafka-net
-
-volumes:
-  kafka-1-data:
-  kafka-2-data:
-  kafka-3-data:
 
 networks:
   kafka-net:

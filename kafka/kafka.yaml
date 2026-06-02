@@ -1,4 +1,45 @@
 ---
+# hostPath-backed PVs so each kafka pod persists its data under k8sss/tmp
+# (one PV per replica — pods must not share the same host path).
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kafka-pv-0
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/myadmin/tools/projects/k8sss/tmp/k8s-kafka/kafka-0"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kafka-pv-1
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/myadmin/tools/projects/k8sss/tmp/k8s-kafka/kafka-1"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kafka-pv-2
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/home/myadmin/tools/projects/k8sss/tmp/k8s-kafka/kafka-2"
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -68,6 +109,7 @@ spec:
     - metadata:
         name: data
       spec:
+        storageClassName: manual
         accessModes:
           - "ReadWriteOnce"
         resources:
