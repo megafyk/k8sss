@@ -7,6 +7,11 @@ services:
       - ../tmp/redis/redis-1:/data
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
     command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7001", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7001", "--cluster-announce-bus-port", "17001"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   redis-2:
     image: redis:latest
@@ -16,6 +21,11 @@ services:
       - ../tmp/redis/redis-2:/data
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
     command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7002", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7002", "--cluster-announce-bus-port", "17002"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   redis-3:
     image: redis:latest
@@ -25,6 +35,11 @@ services:
       - ../tmp/redis/redis-3:/data
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
     command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7003", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7003", "--cluster-announce-bus-port", "17003"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   redis-4:
     image: redis:latest
@@ -34,6 +49,11 @@ services:
       - ../tmp/redis/redis-4:/data
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
     command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7004", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7004", "--cluster-announce-bus-port", "17004"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   redis-5:
     image: redis:latest
@@ -43,6 +63,11 @@ services:
       - ../tmp/redis/redis-5:/data
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
     command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7005", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7005", "--cluster-announce-bus-port", "17005"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   redis-6:
     image: redis:latest
@@ -52,6 +77,11 @@ services:
       - ../tmp/redis/redis-6:/data
       - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
     command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--port", "7006", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7006", "--cluster-announce-bus-port", "17006"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   redis-cluster-init:
     image: redis:latest
@@ -70,3 +100,8 @@ services:
       127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003
       127.0.0.1:7004 127.0.0.1:7005 127.0.0.1:7006
       --cluster-replicas 1"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 24M

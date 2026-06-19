@@ -1,0 +1,34 @@
+services:
+  oracle-19c:
+    image: doctorkirk/oracle-19c:latest
+    container_name: oracle-19c
+    hostname: oracle-19c
+    ports:
+      - "1521:1521" # listener
+      - "5500:5500" # EM Express
+    environment:
+      ORACLE_SID: ORCLCDB
+      ORACLE_PDB: ORCLPDB1
+      ORACLE_PWD: oracle
+      ORACLE_CHARACTERSET: AL32UTF8
+    volumes:
+      - ../tmp/oracle/oradata:/opt/oracle/oradata
+      # Runs once when the DB is first created (fresh oradata) — creates BANKPLUS.
+      - ./setup:/opt/oracle/scripts/setup:ro
+      # DISABLE_OOB=ON — fixes ORA-03113 for external JDBC clients over rootless NAT.
+      - ./config/sqlnet.ora:/opt/oracle/product/19c/dbhome_1/network/admin/sqlnet.ora:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "sqlplus",
+          "-L",
+          "sys/oracle@//localhost:1521/ORCLCDB",
+          "as",
+          "sysdba",
+          "@/dev/null",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 600s

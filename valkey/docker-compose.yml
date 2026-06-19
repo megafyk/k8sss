@@ -7,6 +7,11 @@ services:
       - ../tmp/valkey/valkey-1:/data
       - ./valkey.conf:/usr/local/etc/valkey/valkey.conf:ro
     command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf", "--port", "7101", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7101", "--cluster-announce-bus-port", "17101"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   valkey-2:
     image: valkey/valkey:latest
@@ -16,6 +21,11 @@ services:
       - ../tmp/valkey/valkey-2:/data
       - ./valkey.conf:/usr/local/etc/valkey/valkey.conf:ro
     command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf", "--port", "7102", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7102", "--cluster-announce-bus-port", "17102"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   valkey-3:
     image: valkey/valkey:latest
@@ -25,6 +35,11 @@ services:
       - ../tmp/valkey/valkey-3:/data
       - ./valkey.conf:/usr/local/etc/valkey/valkey.conf:ro
     command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf", "--port", "7103", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7103", "--cluster-announce-bus-port", "17103"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   valkey-4:
     image: valkey/valkey:latest
@@ -34,6 +49,11 @@ services:
       - ../tmp/valkey/valkey-4:/data
       - ./valkey.conf:/usr/local/etc/valkey/valkey.conf:ro
     command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf", "--port", "7104", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7104", "--cluster-announce-bus-port", "17104"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   valkey-5:
     image: valkey/valkey:latest
@@ -43,6 +63,11 @@ services:
       - ../tmp/valkey/valkey-5:/data
       - ./valkey.conf:/usr/local/etc/valkey/valkey.conf:ro
     command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf", "--port", "7105", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7105", "--cluster-announce-bus-port", "17105"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   valkey-6:
     image: valkey/valkey:latest
@@ -52,6 +77,11 @@ services:
       - ../tmp/valkey/valkey-6:/data
       - ./valkey.conf:/usr/local/etc/valkey/valkey.conf:ro
     command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf", "--port", "7106", "--cluster-announce-ip", "127.0.0.1", "--cluster-announce-port", "7106", "--cluster-announce-bus-port", "17106"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 64M
 
   valkey-cluster-init:
     image: valkey/valkey:latest
@@ -70,3 +100,8 @@ services:
       127.0.0.1:7101 127.0.0.1:7102 127.0.0.1:7103
       127.0.0.1:7104 127.0.0.1:7105 127.0.0.1:7106
       --cluster-replicas 1"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 24M

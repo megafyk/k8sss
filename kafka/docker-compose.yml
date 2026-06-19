@@ -32,11 +32,17 @@ services:
       KAFKA_NUM_PARTITIONS: 3
 
       KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf"
+      KAFKA_HEAP_OPTS: "-Xmx384m -Xms256m"
     volumes:
       - ../tmp/kafka/kafka-1:/var/lib/kafka/data
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf:ro
     networks:
       - kafka-net
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 768M
 
   kafka-2:
     image: apache/kafka:latest
@@ -71,11 +77,17 @@ services:
       KAFKA_NUM_PARTITIONS: 3
 
       KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf"
+      KAFKA_HEAP_OPTS: "-Xmx384m -Xms256m"
     volumes:
       - ../tmp/kafka/kafka-2:/var/lib/kafka/data
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf:ro
     networks:
       - kafka-net
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 768M
 
   kafka-3:
     image: apache/kafka:latest
@@ -110,11 +122,17 @@ services:
       KAFKA_NUM_PARTITIONS: 3
 
       KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf"
+      KAFKA_HEAP_OPTS: "-Xmx384m -Xms256m"
     volumes:
       - ../tmp/kafka/kafka-3:/var/lib/kafka/data
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf:ro
     networks:
       - kafka-net
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 768M
 
 networks:
   kafka-net:

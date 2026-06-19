@@ -1,0 +1,10 @@
+# Custom sqlnet.ora mounted into the container.
+#
+# DISABLE_OOB=ON is the important line: it stops the server from using
+# out-of-band (TCP urgent data) breaks. The Oracle JDBC/thin drivers probe
+# OOB during connect, but RootlessKit's bridge port-forwarder drops urgent
+# data, so the handshake hangs and the client gets ORA-03113. Disabling OOB
+# makes external (DataGrip/JDBC) connections work through the NAT.
+DISABLE_OOB=ON
+
+NAME.DIRECTORY_PATH= (TNSNAMES, EZCONNECT, HOSTNAME)
